@@ -114,7 +114,6 @@ Ao abrir o macro, ele verifica automaticamente se existe uma versão mais recent
 
 **O macro ficou travado (softlock)**
 - O watchdog de softlock reinicia automaticamente runs travadas após o timeout configurado
-- Se o problema persistir, aumente o valor de **Run Timeout**
 
 **Logs de erro**
 - Crashes são salvos em `crash/` ao lado do `.exe`
