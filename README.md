@@ -1,6 +1,6 @@
 # Inazuma's Mango
 
-Macro for **Anime Vanguards** on Roblox. Automates Cid Raid (Pain Strat) and Spring LTM runs with auto-rejoin, Discord notifications, and visual detection via template matching.
+Macro for **Anime Vanguards** on Roblox. Automates Cid Raid (NOT WORKING) and Spring LTM(STARTING TESTS) runs with auto-rejoin, Discord notifications, and visual detection via template matching.
 
 **Current version:** `1.1.21`
 
