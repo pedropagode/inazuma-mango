@@ -1,28 +1,38 @@
 # Inazuma's Mango
 
-Macro para **Anime Last Stand** no Roblox. Automatiza runs de Cid Raid (Pain Strat) e Spring LTM com auto-rejoin, notificações via Discord e detecção visual por template matching.
+Macro for **Anime Vanguards** on Roblox. Automates Cid Raid (Pain Strat) and Spring LTM runs with auto-rejoin, Discord notifications, and visual detection via template matching.
 
-**Versão atual:** `1.1.5`
-
----
-
-## Requisitos
-
-- Windows 10 ou 11
-- Roblox instalado
-- Licença ativa (HWID autorizado pelo administrador)
-- Conexão com a internet (validação de licença ao abrir)
+**Current version:** `1.0.1`
 
 ---
 
-## Instalação
+## 💬 Community
 
-1. Baixe o arquivo `.zip` na aba **Releases** do repositório
-2. Extraia todos os arquivos para uma pasta de sua escolha
-3. Certifique-se de que a estrutura final ficou assim:
+Questions, support, updates, and license activation — everything happens on our Discord server.
+
+[![Discord](https://img.shields.io/badge/Join%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/QsxH3mHhjr)
+
+> Join at: [discord.gg/QsxH3mHhjr](https://discord.gg/QsxH3mHhjr)
+
+---
+
+## Requirements
+
+- Windows 10 or 11
+- Roblox installed
+- Active license (HWID authorized by the admin)
+- Internet connection (license validation on startup)
+
+---
+
+## Installation
+
+1. Download the `.zip` file from the **Releases** tab of the repository
+2. Extract all files to a folder of your choice
+3. Make sure the final folder structure looks like this:
 
 ```
-pasta/
+folder/
 ├── InazumaMango.exe
 ├── Images/
 ├── tesseract/
@@ -31,104 +41,103 @@ pasta/
 └── get_hwid.py
 ```
 
-> **Importante:** o `.exe` precisa estar na mesma pasta que `Images/` e `tesseract/`. Não mova somente o executável.
+> **Important:** the `.exe` must be in the same folder as `Images/` and `tesseract/`. Do not move only the executable.
 
 ---
 
-## Primeira Utilização — Liberação de Licença
+## First Use — License Activation
 
-O macro usa validação por **HWID** (identificador único do seu PC). Antes de usar pela primeira vez:
+The macro uses **HWID** (unique hardware identifier) validation. Before using it for the first time:
 
-1. Execute `get_hwid.bat`
-2. Copie o código exibido na janela
-3. Envie o código ao administrador para liberar o acesso
-4. Após a liberação, abra `InazumaMango.exe` normalmente — não é necessário baixar nada de novo
+1. Run `get_hwid.bat`
+2. Copy the code displayed in the window
+3. Send the code to the admin to activate your access
+4. After activation, open `InazumaMango.exe` normally — no need to download anything new
 
 ---
 
-## Configuração
+## Configuration
 
-Abra o `InazumaMango.exe`. Na interface, preencha os campos:
+Open `InazumaMango.exe`. Fill in the fields in the interface:
 
-| Campo | Descrição |
+| Field | Description |
 |---|---|
-| **Private Server** | Código ou link do servidor privado do ALS |
-| **Webhook URL** | URL do webhook do Discord para notificações de run (opcional) |
-| **Run Timeout** | Tempo máximo por run em segundos antes de considerar softlock (padrão: 90s) |
-| **Auto-Rejoin** | Quantidade de runs antes de reiniciar o Roblox automaticamente para evitar leak de FPS (padrão: 300) |
-| **VC Chat** | Ative se estiver usando o chat de voz do Roblox (ajusta coordenadas do chat) |
-| **Strategy** | Escolha entre **Pain Strat** (padrão) ou **Spring LTM** |
-| **Gems / Flowers** | Quantidade atual da moeda — usada para calcular o total ganho na sessão |
+| **Private Server** | Code or link of the AV private server |
+| **Webhook URL** | Discord webhook URL for run notifications (optional) |
+| **Run Timeout** | Maximum time per run in seconds before considering a softlock (default: 90s) |
+| **Auto-Rejoin** | Number of runs before automatically restarting Roblox to prevent FPS leak (default: 300) |
+| **VC Chat** | Enable if you are using Roblox voice chat (adjusts chat coordinates) |
+| **Strategy** | Choose between **Pain Strat** (default) or **Spring LTM** |
+| **Gems / Flowers** | Current currency amount — used to calculate total earned in the session |
 
-As configurações são salvas automaticamente em `config.json` ao lado do `.exe`.
+Settings are automatically saved to `config.json` next to the `.exe`.
 
 ---
 
-## Estratégias
+## Strategies
 
-### Pain Strat (padrão)
-- Modo: **Cid Raid — Ruined City Act 2**
-- Unidades: Pain, Ainz, Minato, Nami, Naruto
-- Detecta automaticamente Kurama Mode e ajusta os posicionamentos
-- Moeda rastreada: **Gems** (+150 por vitória)
+### Pain Strat (default)
+- Mode: **Cid Raid — Ruined City Act 2**
+- Units: Pain, Ainz, Minato, Nami, Naruto
+- Automatically detects Kurama Mode and adjusts positioning
+- Tracked currency: **Gems** (+150 per win)
 
 ### Spring LTM
-- Modo: **Spring LTM**
-- Seleciona automaticamente o modo Endless após o lobby
-- Moeda rastreada: **Flowers** (+5400 por vitória/restart)
+- Mode: **Spring LTM**
+- Automatically selects Endless mode after the lobby
+- Tracked currency: **Flowers** (+5400 per win/restart)
 
 ---
 
-## Resolução da Janela do Roblox
+## Roblox Window Resolution
 
-O macro foi calibrado para a janela do Roblox em **800 × 600**. O alinhamento automático posiciona a janela nessa resolução ao entrar no jogo. Não redimensione manualmente durante a execução.
+The macro is calibrated for the Roblox window at **800 × 600**. The automatic alignment positions the window at this resolution when entering the game. Do not manually resize the window during execution.
 
 ---
 
-## Notificações Discord (Webhook)
+## Discord Notifications (Webhook)
 
-Ao configurar um Webhook URL, o macro envia automaticamente:
-- Resumo de cada run (vitória/derrota, tempo, gemas acumuladas)
-- Notificação de rejoin automático
+When a Webhook URL is configured, the macro automatically sends:
+- A summary for each run (win/loss, time, accumulated gems)
+- Auto-rejoin notification
 
-Para criar um webhook: **Discord → Canal → Configurações → Integrações → Webhooks → Novo Webhook → Copiar URL**.
+To create a webhook: **Discord → Channel → Settings → Integrations → Webhooks → New Webhook → Copy URL**.
 
 ---
 
 ## Auto-Update
 
-Ao abrir o macro, ele verifica automaticamente se existe uma versão mais recente. Se houver, um botão de atualização aparece na interface — clique para baixar e substituir o `.exe` automaticamente.
+When the macro opens, it automatically checks for a newer version. If one is available, an update button appears in the interface — click it to download and replace the `.exe` automatically.
 
 ---
 
-## Solução de Problemas
+## Troubleshooting
 
-**O macro não abre / trava na validação**
-- Verifique sua conexão com a internet
-- Confirme que seu HWID foi liberado pelo administrador
+**The macro won't open / freezes during validation**
+- Check your internet connection
+- Confirm that your HWID has been authorized by the admin
 
-**Imagens não são detectadas / macro não clica no lugar certo**
-- Confirme que a pasta `Images/` está ao lado do `.exe`
-- Certifique-se de que o Roblox está em **800 × 600** e na posição correta (use o alinhamento automático da GUI)
-- Não use escalas de DPI diferentes de 100% no Windows
+**Images not detected / macro clicks in the wrong place**
+- Confirm that the `Images/` folder is next to the `.exe`
+- Make sure Roblox is at **800 × 600** and in the correct position (use the GUI's automatic alignment)
+- Do not use DPI scaling other than 100% in Windows
 
-**O macro ficou travado (softlock)**
-- O watchdog de softlock reinicia automaticamente runs travadas após o timeout configurado
-- Se o problema persistir, aumente o valor de **Run Timeout**
+**The macro got stuck (softlock)**
+- The softlock watchdog automatically restarts stuck runs after the configured timeout
 
-**Logs de erro**
-- Crashes são salvos em `crash/` ao lado do `.exe`
-- Ative **Save Log** na interface para gravar o log completo da sessão
+**Error logs**
+- Crashes are saved in `crash/` next to the `.exe`
+- Enable **Save Log** in the interface to record the full session log
 
 ---
 
-## Arquivos do Release
+## Release Files
 
-| Arquivo | Descrição |
+| File | Description |
 |---|---|
-| `InazumaMango.exe` | Executável principal |
-| `Images/` | Imagens de template matching (necessário ao lado do exe) |
-| `tesseract/` | OCR para detecção de wave number (Spring LTM) |
-| `config.json` | Configurações — editado automaticamente pela GUI |
-| `get_hwid.bat` | Utilitário para obter seu HWID |
-| `get_hwid.py` | Script invocado pelo `get_hwid.bat` |
+| `InazumaMango.exe` | Main executable |
+| `Images/` | Template matching images (must be next to the exe) |
+| `tesseract/` | OCR for wave number detection (Spring LTM) |
+| `config.json` | Settings — automatically edited by the GUI |
+| `get_hwid.bat` | Utility to obtain your HWID |
+| `get_hwid.py` | Script invoked by `get_hwid.bat` |
