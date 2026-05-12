@@ -6,6 +6,16 @@ Macro para **Anime Vanguards** no Roblox. Automatiza runs de Cid Raid (Pain Stra
 
 ---
 
+## 💬 Comunidade
+
+Dúvidas, suporte, atualizações e liberação de licença — tudo acontece no nosso servidor do Discord.
+
+[![Discord](https://img.shields.io/badge/Entre%20no%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/QsxH3mHhjr)
+
+> Acesse: [discord.gg/QsxH3mHhjr](https://discord.gg/QsxH3mHhjr)
+
+---
+
 ## Requisitos
 
 - Windows 10 ou 11
