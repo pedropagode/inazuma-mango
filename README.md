@@ -52,7 +52,7 @@ Abra o `InazumaMango.exe`. Na interface, preencha os campos:
 
 | Campo | Descrição |
 |---|---|
-| **Private Server** | Código ou link do servidor privado do ALS |
+| **Private Server** | Código ou link do servidor privado do AV |
 | **Webhook URL** | URL do webhook do Discord para notificações de run (opcional) |
 | **Run Timeout** | Tempo máximo por run em segundos antes de considerar softlock (padrão: 90s) |
 | **Auto-Rejoin** | Quantidade de runs antes de reiniciar o Roblox automaticamente para evitar leak de FPS (padrão: 300) |
