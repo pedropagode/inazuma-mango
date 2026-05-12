@@ -2,7 +2,7 @@
 title Inazuma's Mango -- HWID
 cd /d "%~dp0"
 
-:: Tenta py primeiro (Python Launcher do Windows), depois python
+:: Try py first (Windows Python Launcher), then python
 where py >nul 2>&1
 if %errorlevel%==0 (
     py "%~dp0get_hwid.py"
@@ -16,10 +16,10 @@ if %errorlevel%==0 (
 )
 
 echo.
-echo [ERRO] Python nao foi encontrado no PATH.
+echo [ERROR] Python was not found on the PATH.
 echo.
-echo Instale o Python em https://www.python.org/downloads/
-echo Durante a instalacao, marque "Add Python to PATH".
+echo Install Python from https://www.python.org/downloads/
+echo During installation, make sure to check "Add Python to PATH".
 echo.
 
 :done

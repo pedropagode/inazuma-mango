@@ -27,7 +27,7 @@ def get_hwid() -> str:
 
 
 def copy_to_clipboard(text: str) -> bool:
-    """Copia o texto para o clipboard do Windows via clip.exe (stdlib)."""
+    """Copy text to the Windows clipboard via clip.exe (stdlib only)."""
     try:
         subprocess.run(
             "clip", input=text.encode("utf-16le"),
@@ -43,7 +43,7 @@ def main():
 
     print()
     print("  ============================================")
-    print("   Inazuma Mango -- Verificacao de Acesso")
+    print("   Inazuma Mango -- Access Check")
     print("  ============================================")
     print()
     print(f"   HWID: {hwid}")
@@ -51,16 +51,16 @@ def main():
 
     copied = copy_to_clipboard(hwid)
     if copied:
-        print("   [OK] Seu HWID foi copiado para a area de transferencia!")
-        print("        Cole com Ctrl+V onde quiser enviar.")
+        print("   [OK] Your HWID was copied to the clipboard!")
+        print("        Paste it with Ctrl+V wherever you need.")
     else:
-        print("   [!] Nao foi possivel copiar automaticamente.")
-        print("       Selecione o codigo acima e copie manualmente.")
+        print("   [!] Could not copy automatically.")
+        print("       Select the code above and copy it manually.")
     print()
-    print("  Verificando licenca no servidor...")
+    print("  Checking license on the server...")
     print()
 
-    # Usa urllib (stdlib) para nao depender de requests
+    # Use urllib (stdlib) to avoid depending on requests
     import json
     import urllib.parse
     import urllib.request
@@ -72,10 +72,10 @@ def main():
         with urllib.request.urlopen(req, timeout=30) as resp:
             data = json.loads(resp.read().decode("utf-8"))
     except Exception as e:
-        print("  [ERRO] Nao foi possivel contactar o servidor.")
-        print(f"  Detalhes: {e}")
+        print("  [ERROR] Could not contact the server.")
+        print(f"  Details: {e}")
         print()
-        print(f"  URL testada: {url}")
+        print(f"  URL tested: {url}")
         print()
         return
 
@@ -83,24 +83,24 @@ def main():
     print()
     if allowed:
         print("  ============================================")
-        print("   Acesso Liberado")
-        nome = data.get("user", "")
-        if nome:
-            print(f"   Bem-vindo, {nome}!")
+        print("   Access Granted")
+        name = data.get("user", "")
+        if name:
+            print(f"   Welcome, {name}!")
         print("  ============================================")
     else:
         print("  ============================================")
-        print("   Acesso Bloqueado")
+        print("   Access Blocked")
         print()
-        print("   Seu HWID nao esta autorizado.")
+        print("   Your HWID is not authorized.")
         print()
         print(f"   {hwid}")
         print()
         if copy_to_clipboard(hwid):
-            print("   [OK] HWID copiado para a area de transferencia.")
-            print("        Cole com Ctrl+V e envie ao administrador.")
+            print("   [OK] HWID copied to the clipboard.")
+            print("        Paste it with Ctrl+V and send it to the administrator.")
         else:
-            print("   Envie o codigo acima ao administrador.")
+            print("   Send the code above to the administrator.")
         print("  ============================================")
     print()
 

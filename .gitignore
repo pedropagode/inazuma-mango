@@ -1,4 +1,4 @@
-# Pastas temporarias geradas em runtime
+# Runtime-generated temporary folders
 _tmp/
 crash/
 logs/
