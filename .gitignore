@@ -1,9 +1,6 @@
-# O .exe pesa mais que o limite de 100 MB do GitHub
-# Ele e distribuido via GitHub Releases (asset), nao versionado em git
-InazumaMango.exe
-
-# Pastas temporarias que nao devem ir pro repo
+# Pastas temporarias geradas em runtime
 _tmp/
 crash/
 logs/
 __pycache__/
+InazumaMango-v*.zip
