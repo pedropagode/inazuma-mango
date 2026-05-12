@@ -2,7 +2,7 @@
 
 Macro para **Anime Last Stand** no Roblox. Automatiza runs de Cid Raid (Pain Strat) e Spring LTM com auto-rejoin, notificações via Discord e detecção visual por template matching.
 
-**Versão atual:** `1.0.5`
+**Versão atual:** `1.0.1`
 
 ---
 
