@@ -1,65 +1,73 @@
-; updater.ahk
-; ─────────────
-; Updater do InazumaMango.exe — logica identica ao padrao AHK:
-;   FileDelete  → apaga o exe atual
-;   Download    → baixa o novo direto no lugar
-;   Run         → relanca
-;
-; Chamado pelo update_api.py via subprocess quando o usuario confirma o update.
-; Recebe o caminho do exe como primeiro parametro (%1%).
-; Se nao receber parametro, assume o proprio diretorio do script.
+; updater.ahk — Inazuma Mango auto-updater (AHK v2)
+; ─────────────────────────────────────────────────────────────────────────────
+; Recebe o caminho do .exe atual como primeiro parametro.
+; Fluxo:
+;   1. Espera o processo principal fechar
+;   2. Baixa InazumaMango.exe (release mais recente)
+;   3. Baixa AutoRamTrim.ahk (release mais recente)
+;   4. Relança o InazumaMango.exe
+; ─────────────────────────────────────────────────────────────────────────────
 
 #Requires AutoHotkey v2.0
-#SingleInstance Force
 
-EXE_NAME  := "InazumaMango.exe"
-GH_USER   := "pedropagode"
-GH_REPO   := "inazuma-mango"
+REPO_OWNER := "pedropagode"
+REPO_REPO  := "inazuma-mango"
+BASE_URL   := "https://github.com/" . REPO_OWNER . "/" . REPO_REPO . "/releases/latest/download/"
 
-; Caminho do exe passado pelo update_api.py, ou detectado automaticamente
-if A_Args.Length >= 1
-    macro_path := A_Args[1]
-else
-    macro_path := A_ScriptDir "\" EXE_NAME
+EXE_NAME   := "InazumaMango.exe"
+AHK_NAME   := "AutoRamTrim.ahk"
 
-download_url := "https://github.com/" GH_USER "/" GH_REPO "/releases/latest/download/" EXE_NAME
+; Recebe o caminho do exe como arg ou detecta pelo script location
+exePath := A_Args.Length > 0 ? A_Args[1] : A_ScriptDir . "\" . EXE_NAME
+exeDir  := RegExReplace(exePath, "\\[^\\]+$", "")
 
-; Espera o InazumaMango.exe realmente fechar antes de mexer no arquivo.
-; O Python chama Popen(ahk) e DEPOIS QApplication.quit(), entao eles correm
-; em paralelo — o exe pode levar segundos para finalizar, e enquanto o
-; processo existe o Windows mantem lock exclusivo no executavel, causando
-; erro 32 ("arquivo em uso") tanto no FileDelete quanto no Download.
-SplitPath(macro_path, &exe_basename)
-ProcessWaitClose(exe_basename, 30)
+; Garante que o diretorio termina sem barra
+if SubStr(exeDir, -1) = "\"
+    exeDir := SubStr(exeDir, 1, -1)
 
-; Mesmo apos o processo sair, o Windows pode demorar alguns ms liberando o
-; handle. Tenta deletar em loop ate conseguir (ou desistir apos ~5s).
-delete_ok := false
-loop 25 {
-    try {
-        FileDelete(macro_path)
-        delete_ok := true
+exeUrl  := BASE_URL . EXE_NAME
+ahkUrl  := BASE_URL . AHK_NAME
+exeDest := exeDir . "\" . EXE_NAME
+ahkDest := exeDir . "\" . AHK_NAME
+
+; ── 1. Aguarda o processo principal encerrar (até 30s) ───────────────────────
+exeBase := RegExReplace(EXE_NAME, "\.exe$", "")
+Loop 60 {
+    if !ProcessExist(exeBase)
         break
-    } catch {
-        Sleep 200
-    }
-}
-if !delete_ok and FileExist(macro_path) {
-    MsgBox "Nao foi possivel remover o exe atual — feche o InazumaMango e tente novamente.",
-           "InazumaMango Update", 16
-    ExitApp()
+    Sleep(500)
 }
 
-; Baixa o novo exe direto no mesmo caminho
+; Pausa extra para liberar file handles do SO
+Sleep(1500)
+
+; ── 2. Baixa o novo InazumaMango.exe ─────────────────────────────────────────
 try {
-    Download(download_url, macro_path)
-} catch Error as e {
-    MsgBox "Falha ao baixar a atualizacao:`n" e.Message, "InazumaMango Update", 16
-    ExitApp()
+    if FileExist(exeDest)
+        FileDelete(exeDest)
+    Download(exeUrl, exeDest)
+} catch as e {
+    MsgBox("Falha ao baixar " . EXE_NAME . "`n" . e.Message, "Inazuma Updater", 16)
+    ExitApp(1)
 }
 
-Sleep 500
+; ── 3. Baixa AutoRamTrim.ahk ─────────────────────────────────────────────────
+try {
+    if FileExist(ahkDest)
+        FileDelete(ahkDest)
+    Download(ahkUrl, ahkDest)
+} catch {
+    ; Falha no AutoRamTrim nao deve bloquear o update do exe principal
+    ; Apenas continua — o arquivo antigo já foi deletado, mas o trim funciona
+    ; sem ele (só não trimará até o próximo ciclo)
+}
 
-; Relanca o exe atualizado
-Run macro_path
-ExitApp()
+; ── 4. Relança o exe atualizado ──────────────────────────────────────────────
+try {
+    Run(exeDest)
+} catch as e {
+    MsgBox("Update concluido mas falha ao relançar.`n" . e.Message
+           . "`nAbra manualmente: " . exeDest, "Inazuma Updater", 48)
+}
+
+ExitApp(0)

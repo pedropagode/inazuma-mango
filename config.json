@@ -1,11 +1,11 @@
-﻿{
-    "webhook_url":  "",
-    "private_server":  "",
-    "run_timeout":  "90",
-    "auto_rejoin_runs":  "300",
-    "vc_chat":  false,
-    "save_log":  false,
-    "initial_gems":  "0",
-    "initial_flowers":  "0",
-    "strategy":  "spring_ltm"
+{
+  "webhook_url": "",
+  "private_server": "",
+  "auto_rejoin_runs": "0",
+  "vc_chat": false,
+  "save_log": false,
+  "initial_gems": "0",
+  "initial_flowers": "0",
+  "strategy": "pain_strat",
+  "pain_place_min_delay": 8.5
 }
