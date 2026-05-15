@@ -1,59 +1,61 @@
-if !A_IsAdmin
-{
-    Run *RunAs "%A_ScriptFullPath%"
-    ExitApp
-}
-#Persistent
-#NoEnv
-#SingleInstance, Force
+#Requires AutoHotkey v2.0
+#SingleInstance Force
 
-GoSub, ReadInterval
+; ── Boot ──────────────────────────────────────────────────────────────────────
+; Schedule the first run using the saved interval, then let AutoRamTrim()
+; reschedule itself every cycle so GUI changes to CD minutes take effect.
+ScheduleTimer()
 return
 
-; ── Lê intervalo do config ────────────────────────────────────────────────────
-ReadInterval:
-    iniFile    := A_ScriptDir . "\ram_trim_config.ini"
-    IniRead, rawVal, %iniFile%, Settings, IntervalMinutes, 6
-    intervalMs := rawVal * 60000
+; ── Read interval from config and (re)schedule the timer ──────────────────────
+ScheduleTimer() {
+    global
+    iniFile   := A_ScriptDir . "\ram_trim_config.ini"
+    rawVal    := IniRead(iniFile, "Settings", "IntervalMinutes", 6)
+    intervalMs := Integer(rawVal) * 60000
     if (intervalMs < 120000)
         intervalMs := 120000
     if (intervalMs > 900000)
         intervalMs := 900000
-    SetTimer, AutoRamTrim, %intervalMs%
-return
+    ; Delete any existing timer before creating a new one with the updated period.
+    ; Without this, SetTimer only changes the period on the NEXT fire — the
+    ; current countdown keeps running with the old value.
+    SetTimer(AutoRamTrim, 0)
+    SetTimer(AutoRamTrim, intervalMs)
+}
 
-; ── Ciclo de trim ─────────────────────────────────────────────────────────────
-AutoRamTrim:
-    GoSub, ReadInterval
+; ── Trim cycle ─────────────────────────────────────────────────────────────────
+AutoRamTrim() {
+    ; Re-read config every cycle so GUI changes to CD minutes take effect
+    ; without requiring an AHK restart.
+    ScheduleTimer()
 
-    WinGet, robloxList, List, ahk_exe RobloxPlayerBeta.exe
-    if (robloxList = 0)
+    robloxList := WinGetList("ahk_exe RobloxPlayerBeta.exe")
+    if (robloxList.Length = 0)
         return
 
     totalSavedBytes := 0
 
-    Loop, %robloxList%
-    {
-        this_id  := robloxList%A_Index%
-        WinGet, this_pid, PID, ahk_id %this_id%
+    for hwnd in robloxList {
+        pid := WinGetPID("ahk_id " . hwnd)
 
-        hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "UInt", this_pid, "Ptr")
+        hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "UInt", pid, "Ptr")
         if (!hProcess)
             continue
 
-        ; Lê WorkingSetSize ANTES do trim
-        ; PROCESS_MEMORY_COUNTERS (72 bytes, 64-bit): WorkingSetSize em offset 16
-        VarSetCapacity(pmc, 72, 0)
-        NumPut(72, pmc, 0, "UInt")
-        DllCall("psapi.dll\GetProcessMemoryInfo", "Ptr", hProcess, "Ptr", &pmc, "UInt", 72)
+        ; Read WorkingSetSize BEFORE trim
+        ; PROCESS_MEMORY_COUNTERS (72 bytes, 64-bit): WorkingSetSize at offset 16
+        pmc := Buffer(72, 0)
+        NumPut("UInt", 72, pmc, 0)
+        DllCall("psapi.dll\GetProcessMemoryInfo", "Ptr", hProcess, "Ptr", pmc, "UInt", 72)
         wssBefore := NumGet(pmc, 16, "UInt64")
 
         DllCall("psapi.dll\EmptyWorkingSet", "Ptr", hProcess)
 
-        ; Lê WorkingSetSize DEPOIS do trim
-        VarSetCapacity(pmc2, 72, 0)
-        NumPut(72, pmc2, 0, "UInt")
-        DllCall("psapi.dll\GetProcessMemoryInfo", "Ptr", hProcess, "Ptr", &pmc2, "UInt", 72)
+        ; Read WorkingSetSize AFTER trim
+        pmc2 := Buffer(72, 0)
+        NumPut("UInt", 72, pmc2, 0)
+        DllCall("psapi.dll\GetProcessMemoryInfo", "Ptr", hProcess, "Ptr", pmc2, "UInt", 72)
         wssAfter := NumGet(pmc2, 16, "UInt64")
 
         DllCall("CloseHandle", "Ptr", hProcess)
@@ -63,8 +65,8 @@ AutoRamTrim:
             totalSavedBytes += saved
     }
 
-    ; Converte para MB e escreve no result file para o GUI ler
-    savedMB := totalSavedBytes / 1048576.0
+    ; Convert to MB and write result file for the GUI to read
+    savedMB    := totalSavedBytes / 1048576.0
     resultFile := A_ScriptDir . "\ram_trim_result.ini"
-    IniWrite, %savedMB%, %resultFile%, Result, SavedMB
-return
+    IniWrite(savedMB, resultFile, "Result", "SavedMB")
+}
