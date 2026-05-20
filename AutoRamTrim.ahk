@@ -30,6 +30,14 @@ AutoRamTrim() {
     ; without requiring an AHK restart.
     ScheduleTimer()
 
+    ; ── SESSION ISOLATION ────────────────────────────────────────────────────
+    ; Only trim Roblox processes that belong to the SAME Windows session as
+    ; this script. Prevents touching other users' Roblox in RDP/multi-user
+    ; environments (mirrors the session-aware fixes in lobby.py).
+    myPid := DllCall("GetCurrentProcessId", "UInt")
+    mySession := 0
+    DllCall("ProcessIdToSessionId", "UInt", myPid, "UInt*", &mySession)
+
     robloxList := WinGetList("ahk_exe RobloxPlayerBeta.exe")
     if (robloxList.Length = 0)
         return
@@ -38,6 +46,12 @@ AutoRamTrim() {
 
     for hwnd in robloxList {
         pid := WinGetPID("ahk_id " . hwnd)
+
+        ; Verifica se o processo pertence à mesma sessão Windows
+        procSession := 0
+        DllCall("ProcessIdToSessionId", "UInt", pid, "UInt*", &procSession)
+        if (procSession != mySession)
+            continue   ; outro usuário RDP — ignora
 
         hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "UInt", pid, "Ptr")
         if (!hProcess)
