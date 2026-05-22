@@ -50,9 +50,10 @@ DownloadViaPowerShell(url, dest) {
     ; Escapa aspas simples no destino para o comando PowerShell
     destEsc := StrReplace(dest, "'", "''")
     urlEsc  := StrReplace(url,  "'", "''")
+    q   := Chr(34)
     cmd := "PowerShell -NoProfile -ExecutionPolicy Bypass -Command "
-         . """(New-Object Net.WebClient).DownloadFile('"
-         . urlEsc . "', '" . destEsc . "')"""
+         . q . "(New-Object Net.WebClient).DownloadFile('"
+         . urlEsc . "', '" . destEsc . "')" . q
     RunWait(cmd, , "Hide")
 }
 
@@ -89,13 +90,24 @@ if (tmpSize < MIN_EXE_BYTES) {
     ExitApp(1)
 }
 
-; Substituicao atomica: deleta o original e renomeia o .tmp
-try {
-    if FileExist(exeDest)
-        FileDelete(exeDest)
-    FileMove(exeTmp, exeDest)
-} catch as e {
-    MsgBox("Falha ao substituir " . EXE_NAME . "`n" . e.Message, "Inazuma Updater", 16)
+; Substituicao atomica com retry — o Windows pode demorar alguns segundos
+; para liberar o file handle do exe apos o processo encerrar (erro 5 = ACCESS_DENIED).
+replaceOk := false
+replaceErr := ""
+Loop 20 {
+    try {
+        if FileExist(exeDest)
+            FileDelete(exeDest)
+        FileMove(exeTmp, exeDest)
+        replaceOk := true
+        break
+    } catch as e {
+        replaceErr := e.Message
+        Sleep(500)
+    }
+}
+if !replaceOk {
+    MsgBox("Falha ao substituir " . EXE_NAME . "`n" . replaceErr, "Inazuma Updater", 16)
     ExitApp(1)
 }
 
