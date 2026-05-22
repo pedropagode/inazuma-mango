@@ -3,9 +3,11 @@
 ; Recebe o caminho do .exe atual como primeiro parametro.
 ; Fluxo:
 ;   1. Espera o processo principal fechar
-;   2. Baixa InazumaMango.exe (release mais recente)
-;   3. Baixa AutoRamTrim.ahk (release mais recente)
-;   4. Relança o InazumaMango.exe
+;   2. Baixa InazumaMango.exe (release mais recente) via PowerShell
+;      (AHK Download() nao segue redirects 302 do GitHub → S3)
+;   3. Valida o tamanho do arquivo baixado antes de substituir o atual
+;   4. Baixa AutoRamTrim.ahk (release mais recente)
+;   5. Relança o InazumaMango.exe
 ; ─────────────────────────────────────────────────────────────────────────────
 
 #Requires AutoHotkey v2.0
@@ -41,32 +43,84 @@ Loop 60 {
 ; Pausa extra para liberar file handles do SO
 Sleep(1500)
 
-; ── 2. Baixa o novo InazumaMango.exe ─────────────────────────────────────────
+; ── Funcao: baixa via PowerShell (segue redirects 302 do GitHub → S3) ────────
+; AHK Download() falha silenciosamente em redirects — grava HTML do redirect
+; em vez do binario. PowerShell WebClient.DownloadFile segue redirects.
+DownloadViaPowerShell(url, dest) {
+    ; Escapa aspas simples no destino para o comando PowerShell
+    destEsc := StrReplace(dest, "'", "''")
+    urlEsc  := StrReplace(url,  "'", "''")
+    cmd := "PowerShell -NoProfile -ExecutionPolicy Bypass -Command "
+         . """(New-Object Net.WebClient).DownloadFile('"
+         . urlEsc . "', '" . destEsc . "')"""
+    RunWait(cmd, , "Hide")
+}
+
+; ── 2. Baixa o novo InazumaMango.exe para arquivo temporario primeiro ─────────
+; Baixa para .tmp antes de deletar o original — se o download falhar,
+; o exe atual nao e perdido.
+exeTmp := exeDest . ".tmp"
+
 try {
-    if FileExist(exeDest)
-        FileDelete(exeDest)
-    Download(exeUrl, exeDest)
+    if FileExist(exeTmp)
+        FileDelete(exeTmp)
+    DownloadViaPowerShell(exeUrl, exeTmp)
 } catch as e {
     MsgBox("Falha ao baixar " . EXE_NAME . "`n" . e.Message, "Inazuma Updater", 16)
     ExitApp(1)
 }
 
+; Valida o arquivo baixado — rejeita se menor que 1 MB (HTML de erro, redirect
+; nao seguido ou download incompleto produzem arquivos minusculos)
+MIN_EXE_BYTES := 1048576  ; 1 MB
+if !FileExist(exeTmp) {
+    MsgBox("Download falhou: arquivo nao foi criado.`nURL: " . exeUrl, "Inazuma Updater", 16)
+    ExitApp(1)
+}
+tmpSize := FileGetSize(exeTmp)
+if (tmpSize < MIN_EXE_BYTES) {
+    try FileDelete(exeTmp)
+    MsgBox(
+        "Download corrompido (" . tmpSize . " bytes).`n"
+        . "Esperado pelo menos 1 MB.`n`n"
+        . "Verifique sua conexao e tente novamente.",
+        "Inazuma Updater", 16
+    )
+    ExitApp(1)
+}
+
+; Substituicao atomica: deleta o original e renomeia o .tmp
+try {
+    if FileExist(exeDest)
+        FileDelete(exeDest)
+    FileMove(exeTmp, exeDest)
+} catch as e {
+    MsgBox("Falha ao substituir " . EXE_NAME . "`n" . e.Message, "Inazuma Updater", 16)
+    ExitApp(1)
+}
+
 ; ── 3. Baixa AutoRamTrim.ahk ─────────────────────────────────────────────────
 try {
-    if FileExist(ahkDest)
-        FileDelete(ahkDest)
-    Download(ahkUrl, ahkDest)
+    ahkTmp := ahkDest . ".tmp"
+    if FileExist(ahkTmp)
+        FileDelete(ahkTmp)
+    DownloadViaPowerShell(ahkUrl, ahkTmp)
+    if FileExist(ahkTmp) && FileGetSize(ahkTmp) > 0 {
+        if FileExist(ahkDest)
+            FileDelete(ahkDest)
+        FileMove(ahkTmp, ahkDest)
+    } else {
+        try FileDelete(ahkTmp)
+    }
 } catch {
     ; Falha no AutoRamTrim nao deve bloquear o update do exe principal
-    ; Apenas continua — o arquivo antigo já foi deletado, mas o trim funciona
-    ; sem ele (só não trimará até o próximo ciclo)
 }
 
 ; ── 4. Relança o exe atualizado ──────────────────────────────────────────────
 try {
     Run(exeDest)
 } catch as e {
-    MsgBox("Update concluido mas falha ao relançar.`n" . e.Message
+    MsgBox("Update concluido mas falha ao relancar.`n" . e.Message
            . "`nAbra manualmente: " . exeDest, "Inazuma Updater", 48)
 }
 

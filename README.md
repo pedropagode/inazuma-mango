@@ -2,7 +2,7 @@
 
 Macro for **Anime Vanguards** on Roblox. Automates Cid Strat (20 Sec) and Spring LTM runs with auto-rejoin, Discord notifications, auto RAM trim, and visual detection via template matching.
 
-**Current version:** `2.1.1`
+**Current version:** `2.1.5`
 
 ---
 
